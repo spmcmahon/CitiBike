@@ -1,0 +1,63 @@
+Citibike Notes
+
+
+
+Pre - Post pademic ridership patterns 
+
+
+# look at generations: 
+
+SELECT
+  EXTRACT(year
+  FROM
+    starttime) AS year,
+  COUNT(CASE
+      WHEN birth_year>= 1940 AND birth_year < 1959 THEN 1
+  END
+    ) AS Boomer,
+  COUNT(CASE
+      WHEN birth_year>= 1960 AND birth_year < 1979 THEN 1
+  END
+    ) AS Gen_X,
+  COUNT(CASE
+      WHEN birth_year>= 1980 AND birth_year < 1994 THEN 1
+  END
+    ) AS Gen_Y,
+  COUNT(CASE
+      WHEN birth_year>= 1995 AND birth_year < 2012 THEN 1
+  END
+    ) AS Gen_Z
+FROM
+  `bigquery-public-data.new_york_citibike.citibike_trips`
+GROUP BY
+  year
+HAVING 
+  year is NOT NULL
+ORDER BY
+  year DESC
+
+
+
+# look at popular routes 
+
+SELECT
+  start_station_id,
+  end_station_id,
+  COUNT(*) AS Trips_on_route
+FROM
+  `bigquery-public-data.new_york_citibike.citibike_trips`
+WHERE
+  (start_station_id != end_station_id) #or (start_station_id = end_station_id and tripduration > 300)
+GROUP BY
+  start_station_id,
+  end_station_id
+ORDER BY
+  Trips_on_route DESC
+LIMIT
+  10
+
+
+
+  import pandas as pd
+df = pd.read_csv('example.csv')
+df.to_parquet('output.parquet')
