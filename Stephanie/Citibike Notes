@@ -61,3 +61,57 @@ LIMIT
   import pandas as pd
 df = pd.read_csv('example.csv')
 df.to_parquet('output.parquet')
+
+
+
+    
+NYfolders = ['/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2017'
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2018',
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2019',
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2019',
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2020',
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2021',
+             '/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2022']
+
+
+
+
+import random
+import os
+
+# extract all data files in "datasets" folder (contains downloaded .csvs for all months)
+files = os.listdir("datasets")
+
+df = pd.DataFrame()
+
+# we will sample 50% of entries from each month
+p = 0.50
+
+# loop through all files, random sample entries, and append to the master dataframe
+for file in files:
+
+    df = df.append(pd.read_csv(f"datasets/{file}", skiprows=lambda i: i>0 and random.random() > p), ignore_index=True)
+
+# save dataframe as csv
+df.to_csv("citibike_compiled_data.csv", index=False)
+
+
+ temp = temp.sample(frac=0.25, 
+                           random_state=42, 
+                           axis = 0, 
+                           ignore_index= True)
+
+
+
+
+distance to major transit
+
+PATH (14th, 23rd, )
+
+MNR (Grand Central, Penn, Harlem 125th)
+
+LIRR (Penn, Atlantic, Jamaica)
+
+Ferry terminals? 
+
+Sports stadiums (Mets, Yankees, MSG, Barclays, Arthur Ash)
