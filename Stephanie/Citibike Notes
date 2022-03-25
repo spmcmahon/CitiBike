@@ -79,28 +79,6 @@ NYfolders = ['/Users/mcmahon/Repos/CitiBike/Stephanie/Data Files/NewYork/NY2017'
 import random
 import os
 
-# extract all data files in "datasets" folder (contains downloaded .csvs for all months)
-files = os.listdir("datasets")
-
-df = pd.DataFrame()
-
-# we will sample 50% of entries from each month
-p = 0.50
-
-# loop through all files, random sample entries, and append to the master dataframe
-for file in files:
-
-    df = df.append(pd.read_csv(f"datasets/{file}", skiprows=lambda i: i>0 and random.random() > p), ignore_index=True)
-
-# save dataframe as csv
-df.to_csv("citibike_compiled_data.csv", index=False)
-
-
- temp = temp.sample(frac=0.25, 
-                           random_state=42, 
-                           axis = 0, 
-                           ignore_index= True)
-
 
 
 
@@ -114,4 +92,120 @@ LIRR (Penn, Atlantic, Jamaica)
 
 Ferry terminals? 
 
-Sports stadiums (Mets, Yankees, MSG, Barclays, Arthur Ash)
+Sports stadiums (Mets, Yankees, MSG, Barclays, Arthur Ash)]]]]
+
+
+
+
+
+
+
+# 2017 files 
+'201708-citibike-tripdata-clean.feather'
+'201712-citibike-tripdata-clean.feather'
+'201705-citibike-tripdata-clean.feather'
+'201711-citibike-tripdata-clean.feather'
+'201703-citibike-tripdata-clean.feather'
+'201706-citibike-tripdata-clean.feather'
+'201707-citibike-tripdata-clean.feather'
+'201702-citibike-tripdata-clean.feather'
+'201710-citibike-tripdata-clean.feather'
+'201709-citibike-tripdata-clean.feather'
+'201704-citibike-tripdata-clean.feather'
+'201701-citibike-tripdata-clean.feather'
+
+
+
+
+
+
+
+
+
+
+
+# 2021 files
+'202105-citibike-tripdata.csv'
+'202107-citibike-tripdata.csv'
+'202111-citibike-tripdata.csv'
+'202101-citibike-tripdata.csv'
+'202109-citibike-tripdata.csv'
+'202103-citibike-tripdata.csv'
+'202112-citibike-tripdata.csv'
+'202104-citibike-tripdata.csv'
+'202110-citibike-tripdata.csv'
+'202106-citibike-tripdata.csv'
+'202108-citibike-tripdata.csv'
+'202102-citibike-tripdata.csv'
+
+
+
+data = 
+{'start_time' : pd.Series([], dtype ='datetime64'),
+'end_time' : pd.Series([], dtype ='datetime64'),
+'duration' : pd.Series([], dtype ='int32'),
+'start_station_name' : pd.Series([], dtype = 'str'),
+'start_station_id' : pd.Series([], dtype = 'str'),
+'end_station_name' : pd.Series([], dtype = 'str'),
+'end_station_id' : pd.Series([], dtype = 'str'),
+'start_lat' : pd.Series([], dtype = 'float64'),
+'start_lng' : pd.Series([], dtype = 'float64'), 
+'end_lat' : pd.Series([], dtype = 'float64'),
+'end_lng' : pd.Series([], dtype = 'float64'), 
+'user_type': pd.Series([], dtype = 'category')}
+
+
+
+my_df = pd.DataFrame(data)
+
+
+
+CitiBank branding colors: 
+
+dark blue: 010358
+med blue: 365B98
+light blue: 6AB3D9
+whiteish: F2F2F2
+red: D81C1C
+
+
+for df['region_id_start']
+if df['short_name_start'].startswith('HB')  then 311 
+df['short_name_start'].startswith('JC') then 70
+else 71
+
+
+for df['region_id_end']
+
+if df['short_name_end'].startswith('HB')  then 311
+df['short_name_end'].startswith('JC') then 70
+else 71
+
+
+def impute_region(df):
+  if (df['short_name_start'].startswith('HB')) & (df.short_name_start.isna()):
+      np.where(df['short_name_start'].startswith('HB')&(df.short_name_start.isna()))['region_id'] = 311
+  elif  df['short_name_end'].str.startswith('JC')& (df.short_name_start.isna()):
+      np.where(df['short_name_start'].startswith('JC')&(df.short_name_start.isna()))['region_id'] =70
+  else:
+      np.where(df.short_name_start.isna())['region_id'] =71
+
+
+impute_region(df)  
+
+
+
+
+df = df.drop(df[df['subway_dist_start'].isna()].index)
+df = df.drop(df[df['subway_dist_end'].isna()].index)
+
+subway_dist_start       58064
+bus_dist_start          58064
+high_traffic_start      58064
+comm_dist_start         58064
+park_dist_start         58064
+subway_dist_end          3250
+bus_dist_end             3250
+high_traffic_end         3250
+comm_dist_end            3250
+park_dist_end            3250
