@@ -9,10 +9,12 @@ library(TSstudio)
 library(timetk)
 library(lubridate)
 library(fUnitRoots)
+library(ggforce)
 
 df <- arrow::read_feather("C:\\Users\\Francesco\\Desktop\\NYCDSA\\CitiBike\\Francesco\\agno.feather")
+df2 <- arrow::read_feather("C:\\Users\\Francesco\\Desktop\\NYCDSA\\CitiBike\\Francesco\\test_df.feather")
 
-str(df)
+str(df2)
 
 # frequence of start_station pre_covid
 freq_start_pre_covid <- df %>%
@@ -114,9 +116,7 @@ str(routes_freq)
 
 # subsetting df to have start stations and timing
 df_start <- df[,c(1,13,7,15,12)]
-
-# add a column for rides
-df_start$rides <- 1
+df2_start <- df2[,c(1,6,11,)]
 
 # Create different columns for different time configurations
 # Month
@@ -188,7 +188,7 @@ Temps_day <- df_start %>% group_by(Yearday) %>% summarise(count = n())
 
 # Ts day
 myts <- ts(Temps_day$count, frequency=365, start = c(2018))
-plot(myts, 
+plot(myts,
      main = "Time Series of daily bike rides", 
      xlab = "Year", 
      ylab = "Rides")
@@ -254,7 +254,7 @@ for(p in 1:7){
   }
 }
 
-# It will never work
+# Magic function for Sarima
 my_model <- auto.arima(myts)
 my_model
 
@@ -269,65 +269,51 @@ Box.test(my_model$resid, lag=5, type="Ljung-Box")
 Box.test(my_model$resid, lag=10, type="Ljung-Box")
 Box.test(my_model$resid, lag=15, type="Ljung-Box")
 
-# Hourly TS
-Temps_hour <- df_start %>% group_by(Dayhour) %>% summarise(count = n())
+checkresiduals(myforecast)
 
-# Ts day
-myts <- ts(log(Temps_hour$count), frequency = 8760, start = c(2018))
-plot(myts, 
-     main = "Time Series of daily bike rides", 
+accuracy(myforecast)
+
+# Splittin the data in train and test
+train <- ts(Temps_day[1:1096,]$count, frequency=365, start = c(2018))
+test <- ts(Temps_day[1097:1460,]$count, frequency=365, start = 2021)
+
+# Create new model
+model_s <- auto.arima(train)
+model_s
+
+# Plot new model
+fc_s <- forecast(model_s, level=c(40), h=10*12)
+autoplot(fc_s)+
+  autolayer(test, series="Test Data") +
+    facet_zoom(xlim = c(2021,2021.30))
+
+checkresiduals(fc_s)
+accuracy(fc_s)
+
+# new approach
+df_new <- df[,1]
+df2_new <- df2[,1]
+
+df_new <- rbind(df_new, df2_new)
+
+df_start <- mutate(df_new, 
+                   Yearweek = paste(year(start_time), 
+                                   formatC(month(start_time), 
+                                           width = 2, 
+                                           flag = "0"),
+                                   formatC(week(start_time), 
+                                           width = 2, 
+                                           flag = "0")))
+
+
+Temps_week <- df_start %>% group_by(Yearday) %>% summarise(count = n())
+
+Temps_week <- Temps_week[-1,]
+
+ts_week <- ts(Temps_week$count, frequency=52, start = 2018)
+
+plot(ts_week, 
+     main = "Time Series of weekly rides per week", 
      xlab = "Year", 
      ylab = "Rides")
-
-#Decompose daily TS
-myts_day <- decompose(myts)
-plot(myts_day)
-
-# Unit root test
-urkpssTest(myts, type = c("tau"), lags = c("short"),use.lag = NULL, doplot = TRUE)
-ndiffs(myts) #1
-
-# Do the magic again
-my_model <- auto.arima(myts)
-my_model
-
-#ARIMA(4,1,1)(0,1,0)[365]
-plot.ts(my_model$residuals)
-
-myforecast <- forecast(my_model, level=c(95), h=10*12)
-
-plot(myforecast)
-
-Box.test(my_model$resid, lag=5, type="Ljung-Box")
-Box.test(my_model$resid, lag=10, type="Ljung-Box")
-Box.test(my_model$resid, lag=15, type="Ljung-Box")
-
-
-# Make the TS more stationary
-myts2 <- diff(myts)
-plot(myts2)
-Box.test(myts2, type="Ljung-Box", lag = log(length(myts2)))
-
-# Plot ACF (autocorrelation function) for daily TS
-acf(myts2, type = "correlation", main = "ACF for daily rides") #3 significative lags
-pacf(myts2, main = "Partial ACF for daily rides") #5
-
-#arima with p=6, d=1, q=2
-
-d=1
-for(p in 1:6){
-  for(q in 1:4){
-    if (p+d+q<=11){
-      model <- arima(x=myts, order=c((p-1),d,(q-1)))
-      pval<-Box.test(model$residuals, lag=log(length(model$residuals)))
-      sse<-sum(model$residuals^2)
-      cat(p-1,d,q-1, 'AIC=', model$aic, ' SSE=',sse,' p-VALUE=', pval$p.value,'\n')
-    }
-  }
-}
-
-Bike.arima = arima(x=myts, order = c(6,1,2))
-
-Bike.predict = forecast(Bike.arima, h=12, level=80)
-
-autoplot(Bike.predict)
+str(Temps_week)
